@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+# Roland Arsenault
+# Center for Coastal and Ocean Mapping
+# University of New Hampshire
+# Copyright 2017, All rights reserved.
+
+import socket
+import struct
+import rospy
+from geometry_msgs.msg import Twist
+
+address = '127.0.0.1'
+port = 4242
+
+def remote_receiver():
+    pub = rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
+    rospy.init_node('remote_receiver', anonymous=True)
+    rate=rospy.Rate(20)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((address, port))
+    while not rospy.is_shutdown():
+        data,addr = sock.recvfrom(1024)
+        ts,throttle,rudder = struct.unpack('!ddd',data)
+        t = Twist()
+        t.linear.x = throttle
+        t.angular.z = -rudder
+        rospy.loginfo(t)
+        pub.publish(t)
+        rate.sleep()
+
+if __name__ == '__main__':
+    try:
+        remote_receiver()
+    except rospy.ROSInterruptException:
+        pass
+    

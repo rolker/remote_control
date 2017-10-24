@@ -14,7 +14,7 @@ address = '127.0.0.1'
 port = 4242
 
 def remote_receiver():
-    pub = rospy.Publisher('/turtle1/cmd_vel',Twist,queue_size=10)
+    pub = rospy.Publisher('/cmd_vel',Twist,queue_size=10)
     rospy.init_node('remote_receiver', anonymous=True)
     rate=rospy.Rate(20)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

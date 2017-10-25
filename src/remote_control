@@ -21,7 +21,7 @@ def remote_receiver():
     sock.bind((address, port))
     while not rospy.is_shutdown():
         data,addr = sock.recvfrom(1024)
-        ts,throttle,rudder = struct.unpack('!ddd',data)
+        ts,ts_nsec,throttle,rudder = struct.unpack('!IIdd',data)
         t = Twist()
         t.linear.x = throttle
         t.angular.z = -rudder

@@ -41,11 +41,11 @@ while True:
         if event.type == pygame.QUIT: sys.exit()
 
     now = datetime.datetime.utcnow()
-    state = {'timestamp':calendar.timegm(now.timetuple())+now.microsecond/1000000.0 ,'throttle':-js.get_axis(THROTTLE_AXIS),'rudder':js.get_axis(RUDDER_AXIS)}
+    state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond,'throttle':-js.get_axis(THROTTLE_AXIS),'rudder':js.get_axis(RUDDER_AXIS)}
         
     print state
     
-    sock.sendto(struct.pack('!ddd',state['timestamp'],state['throttle'],state['rudder']) ,(address,port))
+    sock.sendto(struct.pack('!IIdd',state['timestamp'],state['ts_nsec'],state['throttle'],state['rudder']) ,(address,port))
     
 
     time.sleep(0.05)

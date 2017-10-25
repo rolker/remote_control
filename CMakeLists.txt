@@ -9,6 +9,7 @@ project(remote_control)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  roslaunch
 )
 
 ## System dependencies are found with CMake's conventions
@@ -194,3 +195,4 @@ catkin_install_python(PROGRAMS src/remote_control scripts/remote_control_joy_sen
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+roslaunch_add_file_check(launch)

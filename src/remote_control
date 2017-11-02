@@ -8,13 +8,13 @@
 import socket
 import struct
 import rospy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 
 address = '127.0.0.1'
 port = 4242
 
 def remote_receiver():
-    pub = rospy.Publisher('/cmd_vel',Twist,queue_size=10)
+    pub = rospy.Publisher('/cmd_vel',TwistStamped,queue_size=10)
     rospy.init_node('remote_receiver', anonymous=True)
     rate=rospy.Rate(20)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -22,9 +22,12 @@ def remote_receiver():
     while not rospy.is_shutdown():
         data,addr = sock.recvfrom(1024)
         ts,ts_nsec,throttle,rudder = struct.unpack('!IIdd',data)
-        t = Twist()
-        t.linear.x = throttle
-        t.angular.z = -rudder
+        t = TwistStamped()
+        t.twist.linear.x = throttle
+        t.twist.angular.z = -rudder
+        t.header.stamp.secs = ts
+        t.header.stamp.nsecs = ts_nsec
+    
         rospy.loginfo(t)
         pub.publish(t)
         rate.sleep()

@@ -1,7 +1,9 @@
 <launch>
     <node pkg="remote_control" type="remote_control" name="remote_control"/>
     <node pkg="remote_control" type="remote_control_joy_sender.py" name="remote_control_joy_sender"/>
-    <node pkg="turtlesim" type="turtlesim_node" name="turtle">
-        <remap from="turtle1/cmd_vel" to="/cmd_vel"/>
+    <node pkg="turtlesim" type="turtlesim_node" name="turtle"/>
+    <node pkg="twiststamped_to_twist" type="twiststamped_to_twist_node" name="strip_twist">
+        <remap from="output" to="turtle1/cmd_vel"/>
+        <remap from="input" to="/cmd_vel"/>
     </node>
 </launch>

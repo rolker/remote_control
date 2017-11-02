@@ -35,15 +35,28 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 address = '127.0.0.1'
 port = 4242
+deadzone = 0.1
+
+def apply_deadzone(value):
+    sign = 1
+    if value < 0:
+        sign = -1
+    magnitude = abs(value)
+    if magnitude < deadzone:
+        magnitude = 0.0
+    else:
+        magnitude = (magnitude-deadzone)/(1.0-deadzone)
+    return magnitude*sign
+
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
 
     now = datetime.datetime.utcnow()
-    state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond,'throttle':-js.get_axis(THROTTLE_AXIS),'rudder':js.get_axis(RUDDER_AXIS)}
+    state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':-apply_deadzone(js.get_axis(THROTTLE_AXIS)),'rudder':apply_deadzone(js.get_axis(RUDDER_AXIS))}
         
-    print state
+    print 'throttle: {:%} rudder: {:%}'.format(state['throttle'],state['rudder'])
     
     sock.sendto(struct.pack('!IIdd',state['timestamp'],state['ts_nsec'],state['throttle'],state['rudder']) ,(address,port))
     

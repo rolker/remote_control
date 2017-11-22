@@ -37,6 +37,17 @@ address = '127.0.0.1'
 port = 4242
 deadzone = 0.1
 
+if len(sys.argv) > 1:
+    for arg in sys.argv[1:]:
+        if '=' in arg:
+            k,v = arg.split('=',1)
+            if k == 'address':
+                address = v
+            if k == 'port':
+                port = int(v)
+            if k == 'deadzone':
+                deadzone = float(v)
+        
 def apply_deadzone(value):
     sign = 1
     if value < 0:

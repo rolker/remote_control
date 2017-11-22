@@ -5,6 +5,7 @@
 # University of New Hampshire
 # Copyright 2017, All rights reserved.
 
+import sys
 import socket
 import struct
 import rospy
@@ -12,6 +13,15 @@ from geometry_msgs.msg import TwistStamped
 
 address = '127.0.0.1'
 port = 4242
+
+if len(sys.argv) > 1:
+    for arg in sys.argv[1:]:
+        if '=' in arg:
+            k,v = arg.split('=',1)
+            if k == 'address':
+                address = v
+            if k == 'port':
+                port = int(v)
 
 def remote_receiver():
     pub = rospy.Publisher('/cmd_vel',TwistStamped,queue_size=10)

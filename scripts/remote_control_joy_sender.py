@@ -30,6 +30,7 @@ js.init()
 print js.get_name()
 
 naxes = js.get_numaxes()
+nbuttons = js.get_numbuttons()
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -59,7 +60,7 @@ def apply_deadzone(value):
         magnitude = (magnitude-deadzone)/(1.0-deadzone)
     return magnitude*sign
 
-
+active = False
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
@@ -67,9 +68,17 @@ while True:
     now = datetime.datetime.utcnow()
     state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':-apply_deadzone(js.get_axis(THROTTLE_AXIS)),'rudder':apply_deadzone(js.get_axis(RUDDER_AXIS))}
         
-    print 'throttle: {:%} rudder: {:%}'.format(state['throttle'],state['rudder'])
+    b0 = js.get_button(0)
+    if b0:
+        active = True
+    b1 = js.get_button(1)
+    if b1:
+        active = False
+        
+    print 'active:',active,'throttle: {:%} rudder: {:%}'.format(state['throttle'],state['rudder']),
     
-    sock.sendto(struct.pack('!IIdd',state['timestamp'],state['ts_nsec'],state['throttle'],state['rudder']) ,(address,port))
+    if active:
+        sock.sendto(struct.pack('!IIdd',state['timestamp'],state['ts_nsec'],state['throttle'],state['rudder']) ,(address,port))
     
 
     time.sleep(0.05)

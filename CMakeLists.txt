@@ -9,6 +9,7 @@ project(remote_control)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   rospy
+  rosbag
   roslaunch
   asv_msgs
   asv_srvs

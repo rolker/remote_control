@@ -32,7 +32,7 @@ def remote_receiver():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((address, port))
     
-    timestamp = datetime.datetime.fromtimestamp(rospy.Time.now().to_time()).isoformat()
+    timestamp = datetime.datetime.utcfromtimestamp(rospy.Time.now().to_time()).isoformat()
     bag = rosbag.Bag('nodes/remote_control_'+('-'.join(timestamp.split(':')))+'.bag', 'w')
     while not rospy.is_shutdown():
         try:

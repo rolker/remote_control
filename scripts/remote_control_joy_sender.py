@@ -24,13 +24,7 @@ RUDDER_AXIS = 3
 size = (320, 240)
 screen = pygame.display.set_mode(size)
 
-js = pygame.joystick.Joystick(0)
-js.init()
-
-print js.get_name()
-
-naxes = js.get_numaxes()
-nbuttons = js.get_numbuttons()
+js = None
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -65,17 +59,31 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
 
+    if js is None and pygame.joystick.get_count()>0:
+        js = pygame.joystick.Joystick(0)
+        js.init()
+
+        print js.get_name()
+
+        naxes = js.get_numaxes()
+        nbuttons = js.get_numbuttons()
+
+
+
     now = datetime.datetime.utcnow()
-    state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':-apply_deadzone(js.get_axis(THROTTLE_AXIS)),'rudder':apply_deadzone(js.get_axis(RUDDER_AXIS))}
+    if js is not None:
+        state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':-apply_deadzone(js.get_axis(THROTTLE_AXIS)),'rudder':apply_deadzone(js.get_axis(RUDDER_AXIS))}
         
-    b0 = js.get_button(0)
-    if b0:
-        active = True
-    b1 = js.get_button(1)
-    if b1:
-        active = False
+        b0 = js.get_button(0)
+        if b0:
+            active = True
+        b1 = js.get_button(1)
+        if b1:
+            active = False
+    else:
+        state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':0.0,'rudder':0.0}
         
-    print 'active:',active,'throttle: {:%} rudder: {:%}'.format(state['throttle'],state['rudder']),
+    print 'active:',active,'throttle: {:%} rudder: {:%}'.format(state['throttle'],state['rudder'])
     
     if active:
         sock.sendto(struct.pack('!IIdd',state['timestamp'],state['ts_nsec'],state['throttle'],state['rudder']) ,(address,port))

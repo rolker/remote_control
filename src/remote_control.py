@@ -25,8 +25,9 @@ if len(sys.argv) > 1:
             if k == 'port':
                 port = int(v)
 
+pubs = {}
+
 def remote_receiver():
-    pub = rospy.Publisher('/cmd_vel',TwistStamped,queue_size=10)
     rospy.init_node('remote_receiver', anonymous=True)
     rate=rospy.Rate(20)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -39,7 +40,12 @@ def remote_receiver():
             data,addr = sock.recvfrom(1024)
         except socket.error:
             break
-        ts,ts_nsec,throttle,rudder = struct.unpack('!IIdd',data)
+        js_id,ts,ts_nsec,throttle,rudder = struct.unpack('!BIIdd',data)
+        
+        if not js_id in pubs:
+            pubs[js_id] = rospy.Publisher('/remote/'+str(js_id)+'/cmd_vel',TwistStamped,queue_size=10)
+
+        
         t = TwistStamped()
         t.twist.linear.x = throttle
         t.twist.angular.z = -rudder
@@ -47,8 +53,8 @@ def remote_receiver():
         t.header.stamp.nsecs = ts_nsec
     
         rospy.loginfo(t)
-        pub.publish(t)
-        bag.write('/cmd_vel',t)
+        pubs[js_id].publish(t)
+        bag.write('/remote/'+str(js_id)+'cmd_vel',t)
         rate.sleep()
     bag.close()
 

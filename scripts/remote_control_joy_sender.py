@@ -24,7 +24,7 @@ RUDDER_AXIS = 3
 size = (320, 240)
 screen = pygame.display.set_mode(size)
 
-js = None
+joysticks = []
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -54,39 +54,38 @@ def apply_deadzone(value):
         magnitude = (magnitude-deadzone)/(1.0-deadzone)
     return magnitude*sign
 
-active = False
+active = {}
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT: sys.exit()
 
-    if js is None and pygame.joystick.get_count()>0:
-        js = pygame.joystick.Joystick(0)
-        js.init()
+    if len(joysticks) == 0 and pygame.joystick.get_count()>0:
+        for i in range(pygame.joystick.get_count()):
+            js = pygame.joystick.Joystick(i)
+            js.init()
+            active[i]=False
 
-        print js.get_name()
+            print js.get_name()
 
-        naxes = js.get_numaxes()
-        nbuttons = js.get_numbuttons()
-
-
+            naxes = js.get_numaxes()
+            nbuttons = js.get_numbuttons()
+            joysticks.append(js)
 
     now = datetime.datetime.utcnow()
-    if js is not None:
-        state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':-apply_deadzone(js.get_axis(THROTTLE_AXIS)),'rudder':apply_deadzone(js.get_axis(RUDDER_AXIS))}
+    for js in joysticks:
+        state = {'id':js.get_id(), 'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':-apply_deadzone(js.get_axis(THROTTLE_AXIS))*2.75,'rudder':apply_deadzone(js.get_axis(RUDDER_AXIS))}
         
         b0 = js.get_button(0)
         if b0:
-            active = True
+            active[state['id']] = True
         b1 = js.get_button(1)
         if b1:
-            active = False
-    else:
-        state = {'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':0.0,'rudder':0.0}
+            active[state['id']] = False
         
-    print 'active:',active,'throttle: {:%} rudder: {:%}'.format(state['throttle'],state['rudder'])
+        print state['id'],'active:',active[state['id']],'throttle: {:%} rudder: {:%}'.format(state['throttle'],state['rudder'])
     
-    if active:
-        sock.sendto(struct.pack('!IIdd',state['timestamp'],state['ts_nsec'],state['throttle'],state['rudder']) ,(address,port))
+        if active[state['id']]:
+            sock.sendto(struct.pack('!BIIdd',state['id'],state['timestamp'],state['ts_nsec'],state['throttle'],state['rudder']) ,(address,port))
     
 
-    time.sleep(0.05)
+    time.sleep(0.1)

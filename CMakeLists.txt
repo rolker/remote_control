@@ -11,8 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   rosbag
   roslaunch
-  asv_msgs
-  asv_srvs
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions

@@ -73,7 +73,7 @@ while True:
 
     now = datetime.datetime.utcnow()
     for js in joysticks:
-        state = {'id':js.get_id(), 'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':-apply_deadzone(js.get_axis(THROTTLE_AXIS))*2.75,'rudder':apply_deadzone(js.get_axis(RUDDER_AXIS))}
+        state = {'id':js.get_id(), 'timestamp':calendar.timegm(now.timetuple()), 'ts_nsec':now.microsecond*1000,'throttle':-apply_deadzone(js.get_axis(THROTTLE_AXIS))*8,'rudder':apply_deadzone(js.get_axis(RUDDER_AXIS))}
         
         b0 = js.get_button(0)
         if b0:

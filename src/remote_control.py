@@ -10,7 +10,6 @@ import socket
 import struct
 import datetime
 import rospy
-import rosbag
 from geometry_msgs.msg import TwistStamped
 
 address = '127.0.0.1'
@@ -33,8 +32,6 @@ def remote_receiver():
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((address, port))
     
-    timestamp = datetime.datetime.utcnow().isoformat()
-    bag = rosbag.Bag('nodes/remote_control_'+('-'.join(timestamp.split(':')))+'.bag', 'w')
     while not rospy.is_shutdown():
         try:
             data,addr = sock.recvfrom(1024)
@@ -54,9 +51,7 @@ def remote_receiver():
     
         rospy.loginfo(t)
         pubs[js_id].publish(t)
-        bag.write('/remote/'+str(js_id)+'cmd_vel',t)
         rate.sleep()
-    bag.close()
 
 if __name__ == '__main__':
     try:
